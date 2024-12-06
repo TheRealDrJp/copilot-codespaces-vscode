@@ -1,0 +1,42 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+// MemeMoolah Smart Contract (ERC-20)
+contract MemeMoolah is ERC20, Ownable {
+
+    // Define max supply (e.g., 1 billion MemeMoolah tokens)
+    uint256 public constant MAX_SUPPLY = 1000000000 * 10**18; // 1 billion tokens
+    uint256 public initialSupply = 500000000 * 10**18; // 500 million tokens initially
+
+    // Events for minting and burning
+    event TokenMinted(address indexed to, uint256 amount);
+    event TokenBurned(address indexed from, uint256 amount);
+
+    // Constructor to initialize the contract and mint initial supply
+    constructor() ERC20("MemeMoolah", "MMLH") {
+        // Mint the initial supply of tokens to the deployer's address
+        _mint(msg.sender, initialSupply);
+    }
+
+    // Mint function: Only the owner can mint new tokens
+    function mint(address to, uint256 amount) external onlyOwner {
+        require(totalSupply() + amount <= MAX_SUPPLY, "MemeMoolah: Exceeds max supply");
+        _mint(to, amount);
+        emit TokenMinted(to, amount);
+    }
+
+    // Burn function: Allows the owner to burn tokens from their own account
+    function burn(uint256 amount) external onlyOwner {
+        require(amount <= balanceOf(msg.sender), "MemeMoolah: Not enough balance to burn");
+        _burn(msg.sender, amount);
+        emit TokenBurned(msg.sender, amount);
+    }
+
+    // Optional: Transfer ownership function if you want to decentralize control later
+    function transferOwnership(address newOwner) public override onlyOwner {
+        super.transferOwnership(newOwner);
+    }
+}
